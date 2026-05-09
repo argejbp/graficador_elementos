@@ -4,6 +4,7 @@ from numpy import linspace, array, asarray, concatenate, sqrt, array_equal, appe
 from pandas import read_csv, DataFrame, Series
 from structural_drawing_funcions import coloured_line, check_repeated_lines
 import streamlit as st
+import io
 
 def thermal_problems(filename, graph, scale, fig, ax, canvas, nodes_check, check_adjust, parallel_adjust, print_test):
     # 'canvas' se mantiene por compatibilidad, pero no se usa .draw()
@@ -75,9 +76,23 @@ def thermal_problems(filename, graph, scale, fig, ax, canvas, nodes_check, check
     st.pyplot(fig)
     
     if print_test.get() == 1:
-        img_name = filename.split('.eplot')[0] + "_output.png"
-        plt.savefig(img_name, dpi=720)
-        st.success(f"Imagen generada con éxito")
+        # img_name = filename.split('.eplot')[0] + "_output.png"
+        # plt.savefig(img_name, dpi=720)
+        # st.success(f"Imagen generada con éxito")
+        # 1. Crear un buffer de memoria
+        buf = io.BytesIO()
+        
+        # 2. Guardar la figura de matplotlib en el buffer en lugar de un archivo
+        fig.savefig(buf, format="png", dpi=300)
+        
+        # 3. Crear el botón de descarga en la interfaz de Streamlit
+        st.download_button(
+            label="💾 Descargar Gráfica en Alta Resolución",
+            data=buf.getvalue(),
+            file_name=f"{filename.split('.')[0]}_{graph.replace(' ', '_')}.png",
+            mime="image/png"
+        )
+        st.success("¡Imagen lista para descargar!")
 
 def draw_mesh(nel, file, filename, fig_title, ax, xmax, xmin, ymax, ymin, dx, dy):
     for i in range(nel):
